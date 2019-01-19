@@ -36,7 +36,7 @@ def setup_logging():
     log.setup(CONF, "plugin-container_expt")
 
 
-def config(conf=None):
+def configure(conf=None):
     if conf is None:
         conf= CONF
     for section in FILE_OPTIONS:
