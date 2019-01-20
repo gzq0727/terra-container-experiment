@@ -410,12 +410,12 @@ class Topology(object):
                     if network_id in err_dic:
                         err_msg = err_dic[network_id]
                         continue
-                    # os_port = self.topology_api.os_create_port(
-                    #     context, port['port_id']
-                    # )
+                    os_port = self.topology_api.os_create_port(
+                        context, port['port_id']
+                    )
                     nics.append({
                         'network_uuid': network_mapper.get(network_id),
-                        # 'port_uuid': os_port['os_port_uuid']
+                        'port_uuid': os_port['os_port_uuid']
                     })
 
                 if err_msg:
