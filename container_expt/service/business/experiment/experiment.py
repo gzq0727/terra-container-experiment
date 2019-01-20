@@ -574,7 +574,7 @@ class Experiment(object):
         # devices = self.get_devices()
         # for device in devices:
         #     if device['is_service']:
-        #         continue  # TODO:liuzhaol 路由服务起停添加好后，该过滤要删除
+        #         continue  #
         #
         #     self.vne_experiment_api.update_device_state(
         #         device['cloud_vm_id'], None, vm_operates.REBOOTING)
@@ -597,7 +597,7 @@ class Experiment(object):
         # devices = self.get_devices()
         # for device in devices:
         #     if device['is_service']:
-        #         continue  # TODO:liuzhaol 路由服务起停添加好后，该过滤要删除
+        #         continue  #
         #
         #     self.vne_experiment_api.update_device_state(
         #         device['cloud_vm_id'], None, vm_operates.POWERING_ON)
@@ -616,7 +616,7 @@ class Experiment(object):
         # devices = self.get_devices()
         # for device in devices:
         #     if device['is_service']:
-        #         continue  # TODO:liuzhaol 路由服务起停添加好后，该过滤要删除
+        #         continue  #
         #
         #     self.vne_experiment_api.update_device_state(
         #         device['cloud_vm_id'], None, vm_operates.POWERING_OFF)
