@@ -26,7 +26,7 @@ CONF.register_opts(interval_opts)
 LOG = logging.getLogger(__name__)
 
 
-@dependency.require('container_expt_api')
+@dependency.requires('container_expt_api')
 class ExperimentPRCManager(rpc.Manager):
     
     target = messaging.Target(version='1.0')

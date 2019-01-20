@@ -274,7 +274,8 @@ class Topology(object):
                     else:
                         other = {'type': PORT_TYPE_DIC['data']}
                     port_value['other'] = json.dumps(other)
-                    port_ref = self.topology_api.db_create_port(port_value)
+                    allocate_ip = device_data['ip_address']
+                    port_ref = self.topology_api.db_create_port(port_value, allocate_ip=allocate_ip)
                     ports.append({
                         'port_id': port_ref['id'],
                         'subnet_id': subnet_dict[subnet_no]['subnet_id'],
