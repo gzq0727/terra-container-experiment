@@ -27,7 +27,7 @@ LOG = logging.getLogger(__name__)
 
 
 @dependency.requires('container_expt_api')
-class ExperimentPRCManager(rpc.Manager):
+class ExperimentRPCManager(rpc.Manager):
     
     target = messaging.Target(version='1.0')
     
@@ -36,7 +36,7 @@ class ExperimentPRCManager(rpc.Manager):
         self._sync_power_pool = eventlet.GreenPool()
         
     def container_expt_create(self, context, topo_dict):
-        return self.container_expt_api.create(context, topo_dict)
+        return self.container_expt_api.expt_create(context, topo_dict)
 
     def container_expt_delete(self, context, expt_id):
         return self.container_expt_api.expt_delete(context, expt_id)
