@@ -113,10 +113,10 @@ class Topology(object):
         for net in networks:
             values = dict()
             net_id = net['id']
-            values['name'] = 'tenant_%s_%s_%s_network' % (
+            values['name'] = 'container_%s_%s_%s_network' % (
                 expt_name, str(topo_id), str(net_id))
             if len(values['name'].decode('utf-8')) > 60:
-                values['name'] = 'tenant_%s_%s_network' % (
+                values['name'] = 'container_%s_%s_network' % (
                     str(topo_id), str(net_id))
             values['topo_id'] = topo_id
             values['owner_id'] = owner_id
@@ -133,7 +133,7 @@ class Topology(object):
             for sub in subnets:
                 values = dict()
                 values['alias'] = sub['name']
-                sub_name = 'tenant_%s_%s_subnet_%s' % (
+                sub_name = 'container_%s_%s_subnet_%s' % (
                     expt_name, str(topo_id), str(sub['name']))
                 if len(sub_name.decode('utf-8')) > 60:
                     sub_name = sub['name']
