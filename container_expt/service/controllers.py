@@ -89,7 +89,7 @@ class Experiment(wsgi.V1Controller):
         self.container_expt_rpcapi.expt_delete(expt_id)
 
     def detail(self, context, expt_id):
-        ref = self.container_expt_rpcapi.expt_detai(expt_id)
+        ref = self.container_expt_rpcapi.expt_detail(expt_id)
         if not ref:
             raise exception.ExperimentNotFound(expt_id=expt_id)
         return Experiment.wrap_member(context, ref)
