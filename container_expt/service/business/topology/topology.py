@@ -113,10 +113,10 @@ class Topology(object):
         for net in networks:
             values = dict()
             net_id = net['id']
-            values['name'] = 'tenant_%s_%s_%s_network' % (
+            values['name'] = 'container_%s_%s_%s_network' % (
                 expt_name, str(topo_id), str(net_id))
             if len(values['name'].decode('utf-8')) > 60:
-                values['name'] = 'tenant_%s_%s_network' % (
+                values['name'] = 'container_%s_%s_network' % (
                     str(topo_id), str(net_id))
             values['topo_id'] = topo_id
             values['owner_id'] = owner_id
@@ -133,7 +133,7 @@ class Topology(object):
             for sub in subnets:
                 values = dict()
                 values['alias'] = sub['name']
-                sub_name = 'tenant_%s_%s_subnet_%s' % (
+                sub_name = 'container_%s_%s_subnet_%s' % (
                     expt_name, str(topo_id), str(sub['name']))
                 if len(sub_name.decode('utf-8')) > 60:
                     sub_name = sub['name']
@@ -274,7 +274,8 @@ class Topology(object):
                     else:
                         other = {'type': PORT_TYPE_DIC['data']}
                     port_value['other'] = json.dumps(other)
-                    port_ref = self.topology_api.db_create_port(port_value)
+                    allocate_ip = device_data['ip_address']
+                    port_ref = self.topology_api.db_create_port(port_value, allocate_ip=allocate_ip)
                     ports.append({
                         'port_id': port_ref['id'],
                         'subnet_id': subnet_dict[subnet_no]['subnet_id'],
@@ -409,12 +410,12 @@ class Topology(object):
                     if network_id in err_dic:
                         err_msg = err_dic[network_id]
                         continue
-                    # os_port = self.topology_api.os_create_port(
-                    #     context, port['port_id']
-                    # )
+                    os_port = self.topology_api.os_create_port(
+                        context, port['port_id']
+                    )
                     nics.append({
                         'network_uuid': network_mapper.get(network_id),
-                        # 'port_uuid': os_port['os_port_uuid']
+                        'port_uuid': os_port['os_port_uuid']
                     })
 
                 if err_msg:

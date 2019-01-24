@@ -38,7 +38,7 @@ def setup_logging():
 
 def configure(conf=None):
     if conf is None:
-        conf= CONF
+        conf = CONF
     for section in FILE_OPTIONS:
         for option in FILE_OPTIONS[section]:
             if section:
