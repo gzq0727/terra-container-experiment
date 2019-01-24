@@ -45,31 +45,89 @@ class Device(object):
             resource[RESOURCE_DISK] = int(values['disk'])
             owner_id = values['owner_id']
             has_quotas(owner_id, resource)
-            connected_subnet = values.get('connected_subnet_id')
-            if not connected_subnet:
+            subnet_id = values.get('connected_subnet_id')
+            expt_name = values['expt_name']
+            topo_id = values['topo_id']
+            if not subnet_id:
                 pass
 
             # save device
-            device_type = values.get('type')
-            port_no = 1
-            port = {'subnet_id': connected_subnet}
-            if device_type == VM_TYPE_DIC['vcontroller']:
-                port['type'] = PORT_TYPE_DIC['manager']
-                values['manage_ports'] = {port_no: port}
-            else:
-                port['type'] = PORT_TYPE_DIC['data']
-                values['data_ports'] = {port_no: port}
+            # device_type = values.get('type')
+            # port_no = 1
+            # port = {'subnet_id': connected_subnet}
+            # if device_type == VM_TYPE_DIC['vcontroller']:
+            #     port['type'] = PORT_TYPE_DIC['manager']
+            #     values['manage_ports'] = {port_no: port}
+            # else:
+            #     port['type'] = PORT_TYPE_DIC['data']
+            #     values['data_ports'] = {port_no: port}
             consume_quotas(owner_id, resource)
-            try:
-                device_id = self.vne_experiment_api.create_device_data(
-                    self.context, values['expt_name'], values['topo_id'], values)
-            except exception.DeviceCreatedFailed:
-                recycle_quotas(owner_id, resource)
-                raise
+            # try:
+            #     device_id = self.vne_experiment_api.create_device_data(
+            #         self.context, values['expt_name'], values['topo_id'], values)
+            # except exception.DeviceCreatedFailed:
+            #     recycle_quotas(owner_id, resource)
+            #     raise
+
+            device_values = {}
+            extra = dict()
+            extra['coordinate'] = {'x': values.get('x', 0), 'y': values.get('y', 0)}
+            extra['type'] = values['type']
+            if 'if_name' in values:
+                extra['ifname'] = values['if_name']
+            if "domain_id" in values:
+                extra['domain_id'] = values['domain_id']
+
+            device_values['owner_id'] = values['owner_id']
+            device_values['owner_name'] = values['owner_name']
+            device_values['topo_id'] = topo_id
+            device_values['type'] = 'VM'
+
+            device_values['name'] = 'container_%s_%s_%s' % (
+                expt_name, str(topo_id), values['name'])
+            device_values['alias'] = values['alias']
+            device_values['description'] = values['description']
+            device_values['state'] = vm_states.BUILDING
+            device_values['operate'] = vm_operates.SCHEDULING
+            if 'vtype' in values:
+                extra['vtype'] = values['vtype']
+            if values.has_key('image_name'):
+                device_values['image_name'] = values['image_name']
+            device_values['image_uuid'] = values['image_uuid']
+            device_values['flavor_id'] = values['flavor']
+            device_values['cpu'] = values['cpu']
+            device_values['ram'] = values['ram']
+            device_values['disk'] = values['disk']
+            device_values['username'] = values.get('username', '')
+            device_values['password'] = values.get('password', '')
+            device_values['operate_expired_at'] = timeutils.utcnow() + \
+                datetime.timedelta(minutes=DEVICE_OPERATE_TIMEOUT)
+            device_values['other'] = json.dumps(extra)
+            device_values['owner_type'] = XLAB_OWNER_TYPE
+
+            vm_ref = self.vm_api.create_db_vm(device_values)
+
+            device_id = vm_ref['device_id']
+            device_values['no'] = vm_ref['id']
+
+            port_value = dict()
+            port_value['name'] = "%s_port_0" % (values['name'])
+            port_value['name'] = port_value['name'][:64]
+            port_value['device_id'] = device_id
+            port_value['subnet_id'] = subnet_id
+            port_value['device_owner'] = 'compute:nova'
+            other = {'type': PORT_TYPE_DIC['data']}
+            port_value['other'] = json.dumps(other)
+            ip_address = values['ip_address']
+            port_ref = self.topology_api.db_create_port(port_value, allocate_ip=ip_address)
+
+            port = dict()
+            port['port_id'] = port_ref['id']
+
             values['id'] = device_id
 
             # create device in backend async
-            self.__sync_power_pool.spawn_n(self.create_backend, self.context, values)
+            self.__sync_power_pool.spawn_n(self.create_backend, self.context, values, port)
             return {'id': device_id}
 
         except Exception as ex:
@@ -81,7 +139,7 @@ class Device(object):
                             device['obj_id'], vm_states.ERROR, None, str(ex))
             raise
 
-    def create_backend(self, context, device):
+    def create_backend(self, context, device, port):
         device_id = device['id']
         # get os network uuid
         connected_subnet = device.get('connected_subnet_id')
@@ -89,11 +147,22 @@ class Device(object):
         network_ref = self.topology_api.\
             get_network_detail(subnet_ref['network_id'])
         os_network_uuid = network_ref['os_network']['os_network_uuid']
-        nics = [{'network_uuid': os_network_uuid}]
+
+        os_port = self.topology_api.os_create_port(
+            context, port['port_id']
+        )
+        nics = [{'network_uuid': os_network_uuid,
+                 'port_uuid': os_port['os_port_uuid']}]
+
+        userdata = '#cloud-config' \
+                '\n hostname: %s' \
+                '\n manage_etc_hosts: true' % (device['name'])
+                # '\n runcmd:' \
+                # '\n   - mkdir -p /home/tank/kzh' % (device['name'])
 
         try:
             self.vm_api.create_os_vm(
-                context, device_id, nics, get_os_image=True)
+                context, device_id, nics, get_os_image=True, userdata=userdata)
         except Exception as ex:
             device_ref = self.topology_api.get_device_detail(device_id)
             if device_ref:
