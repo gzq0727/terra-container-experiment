@@ -83,7 +83,7 @@ class Device(object):
             device_values['topo_id'] = topo_id
             device_values['type'] = 'VM'
 
-            device_values['name'] = 'container_%s_%s_%s' % (
+            device_values['name'] = 'container-%s-%s-%s' % (
                 expt_name, str(topo_id), values['name'])
             device_values['alias'] = values['alias']
             device_values['description'] = values['description']
@@ -156,9 +156,9 @@ class Device(object):
 
         userdata = '#cloud-config' \
                 '\n hostname: %s' \
-                '\n manage_etc_hosts: true' % (device['name'])
-                # '\n runcmd:' \
-                # '\n   - mkdir -p /home/tank/kzh' % (device['name'])
+                '\n manage_etc_hosts: true' \
+                '\n runcmd:' \
+                '\n   - kubeadm join 192.168.10.100:6443 --token cz275d.fx89my0o0khnzccl --discovery-token-ca-cert-hash sha256:6fdeac8ada5d39615c2ec9c44bdb2a831926b48930d03ca2ff3eac2f1bdfb7f5' % (device['name'])
 
         try:
             self.vm_api.create_os_vm(

@@ -241,7 +241,7 @@ class Topology(object):
             device_data['topo_id'] = topo_id
             device_data['description'] = device_data.get(
                 'description', '%s_description' % device_data['name'])
-            device_data['name'] = 'container_%s_%s_%s' % (
+            device_data['name'] = 'container-%s-%s-%s' % (
                 expt_name, str(topo_id), device_data['name'])
             other = {
                 'vtype': device_data.get('vtype', 0),
